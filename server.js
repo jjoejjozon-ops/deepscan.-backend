@@ -1,11 +1,12 @@
-// --- 1. IMPORT NECESSARY MODULES ---
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import multer from 'multer';
-import fetch from "node-fetch";
+// --- 1. REQUIRE NECESSARY MODULES (Fixed for CommonJS) ---
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const multer = require('multer');
+const fetch = require('node-fetch'); // Make sure 'node-fetch' is in your package.json
 
 // Load .env file (locally) — on Render, env vars are loaded automatically
+// This is okay to keep, as it won't crash when running on Render
 dotenv.config();
 
 // Set the correct PORT (Render uses process.env.PORT)
@@ -18,11 +19,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// multer.memoryStorage is good for deployments like Render
 const upload = multer({ storage: multer.memoryStorage() });
 
 // --- 4. ROUTES ---
 
-// Health check route (important for Render)
+// Health check route (important for Render to mark the service as healthy)
 app.get('/', (req, res) => {
     res.status(200).send('DeepScan AI Backend is Running!');
 });
@@ -36,9 +38,11 @@ app.post("/api/analyze", upload.single("video"), async (req, res) => {
 
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
         if (!GEMINI_API_KEY) {
+            // This is a great check for ensuring the API key is set
             return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
         }
 
+        // The logic for video buffer and API call is correct
         const b64 = req.file.buffer.toString("base64");
 
         const payload = {
@@ -80,11 +84,3 @@ app.post("/api/analyze", upload.single("video"), async (req, res) => {
 app.listen(PORT, () => {
     console.log(`DeepScan Server is listening on PORT ${PORT}`);
 });
-
-
-
-
-
-
-
-
